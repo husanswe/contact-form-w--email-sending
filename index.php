@@ -1,8 +1,14 @@
 <?php 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $username = $_POST['username'];
-        $email = $_POST['email'];
-        htmlspecialchars($username);
+        $username = trim($_POST['username'] ?? '');
+        $email = trim($_POST['email'] ?? '');
+        $subject = trim($_POST['subject'] ?? '');
+        $message = trim($_POST['message'] ?? '');
+        
+        $username = htmlspecialchars($username, ENT_QUOTES, 'UTF-8');
+        $email = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
+        $subject = htmlspecialchars($subject, ENT_QUOTES, 'UTF-8');
+        $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
     }
 ?>
 
