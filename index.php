@@ -1,21 +1,42 @@
 <?php 
+
+    $success = '';
+    $error = '';
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $username = trim($_POST['username'] ?? '');
         $email = trim($_POST['email'] ?? '');
         $subject = trim($_POST['subject'] ?? '');
         $message = trim($_POST['message'] ?? '');
         
-        $username = htmlspecialchars($username, ENT_QUOTES, 'UTF-8');
-        $email = htmlspecialchars($email, ENT_QUOTES, 'UTF-8');
-        $subject = htmlspecialchars($subject, ENT_QUOTES, 'UTF-8');
-        $message = htmlspecialchars($message, ENT_QUOTES, 'UTF-8');
+        if (empty($username) || empty($email) || empty($subject) || empty($message)) {
+            $error = 'All fields are required!';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $error = 'Invalid email address!';
+        } else {
+            $to = 'sulaymonovhusan2002@gmail.com';
+
+            $safe_subject = "Contact Form: " . $subject;
+
+            $body = "You have a new message from your contact form:<br>";
+            $body .= "Name: $username<br>";
+            $body .= "Email: $email<br>";
+            $body .= "Subject: $subject<br>";
+            $body .= "Message: $message<br>";
+
+            $headers = "From: $username <$email>\r\n";
+            $headers .= "Reply-To: $email\r\n";
+            $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+            if (mail($to, $safe_subject, $body, $headers)) {
+                $success = 'Thank you! Your message has been sent.';
+                $username = $email = $subject =$message = '';
+            } else {
+                $erorr = 'Sorry, something went wrong. Email not sent.';
+            }
+        }
     }
 
-    if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        echo "$email is a valid email address.";
-    } else {
-        echo "$email isn't a valid email address.";
-    } 
     
 ?>
 
@@ -38,7 +59,10 @@
                 <div class="bg-white rounded shadow-sm p-4 p-md-5">
                     <h2 class="text-center mb-4 fw-bold">Contact Form</h2>
 
-                    <form action="MAILTO:khusansulaymonov@yandex.com" method="POST" enctype="text/plain">
+                    <?php if ($success): ?>
+                        <div class="alert alert-success"><?php echo $success; ?></div>
+                    <?php else: ?>
+                    <form action="" method="POST">
                         <!-- Name Field -->
                         <div class="mb-3">
                             <label for="username" class="form-label fw-semibold">Name:</label>
@@ -91,6 +115,7 @@
                             </button>
                         </div>
                     </form>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
