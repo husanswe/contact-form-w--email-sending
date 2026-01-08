@@ -1,4 +1,11 @@
 <?php 
+    require 'PHPMailer/src/Exception.php';
+    require 'PHPMailer/src/PHPMailer.php';
+    require 'PHPMailer/src/SMTP.php';
+    
+    use PHPMailer\PHPMailer\PHPMailer;
+    use PHPMailer\PHPMailer\Exception;
+    use PHPMailer\PHPMailer\SMTP;
 
     $success = '';
     $error = '';
@@ -14,30 +21,40 @@
         } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $error = 'Invalid email address!';
         } else {
-            $to = 'sulaymonovhusan2002@gmail.com';
+            $mail = new PHPMailer(true);
 
-            $safe_subject = "Contact Form: " . $subject;
+            try {
+                // ===== SHU YERGA Server settings (SMTP konfiguratsiyasi) =====
+                $mail->SMTPDebug = 0;                                     // Test uchun 2 qo'yib debug ko'rish mumkin
+                $mail->isSMTP();                                          // SMTP orqali yuborish
+                $mail->Host       = 'sandbox.smtp.mailtrap.io';           // Mailtrap host
+                $mail->SMTPAuth   = true;                                 
+                $mail->Username   = 'f400526bf5b48b';                      // <<< Mailtrap username
+                $mail->Password   = '79c779e79df514';                      // <<< Mailtrap password
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;       // STARTTLS
+                $mail->Port       = 2525;                                 // yoki 587
 
-            $body = "You have a new message from your contact form:<br>";
-            $body .= "Name: $username<br>";
-            $body .= "Email: $email<br>";
-            $body .= "Subject: $subject<br>";
-            $body .= "Message: $message<br>";
+                // ===== Keyin Recipients (kimdan, kimga) =====
+                $mail->setFrom($email, $username);                        // Foydalanuvchi ma'lumoti
+                $mail->addAddress('any@recipient.com');                   // Mailtrapga tushadi anyway, shuning uchun istalgan email yozsa bo'ladi
+                $mail->addReplyTo($email, $username);
 
-            $headers = "From: $username <$email>\r\n";
-            $headers .= "Reply-To: $email\r\n";
-            $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+                // ===== Keyin Content (subject va body) =====
+                $mail->isHTML(false);
+                $mail->Subject = "Contact Form: $subject";
+                $mail->Body    = "New message:\n\nName: $username\nEmail: $email\nSubject: $subject\n\nMessage:\n$message";
 
-            if (mail($to, $safe_subject, $body, $headers)) {
+                // ===== Oxirida send() =====
+                $mail->send();
+
                 $success = 'Thank you! Your message has been sent.';
-                $username = $email = $subject =$message = '';
-            } else {
+                $username = $email = $subject = $message = '';
+            } catch (Exception $e) {
                 $error = 'Sorry, something went wrong. Email not sent.';
             }
         }
     }
 
-    
 ?>
 
 <!doctype html>
